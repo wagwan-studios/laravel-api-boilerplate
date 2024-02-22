@@ -31,10 +31,18 @@ class AuthenticationController extends Controller
     }
 
     public function register(RegisterRequest $request){
-
+        $user = $request->validated();
+        try {
+            $this->authService->register($user);
+            $this->apiresponse->responseCreated('User Created Successfully');
+        } catch (\Exception $th) {
+            return $this->apiresponse->responseError($th->getMessage());
+        }
     }
 
-    public function logout(){
-
+    public function logout(Request $request){
+        $token = $request->user()->token();
+        $token->revoke();
+        return $this->apiresponse->responseSuccess(null, 'You Have Been Successfully Logout!');
     }
 }
