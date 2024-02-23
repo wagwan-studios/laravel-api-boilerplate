@@ -4,6 +4,7 @@ namespace App\Http\Services\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthenticationService {
 
@@ -15,15 +16,19 @@ class AuthenticationService {
     }
 
     public function login($request){
-        if(Auth::guard('api')->attempt($request->email, $request->password)){
-            $user = $this->user->where('email', $request->email)->first();
-            $data['token'] = $user->createToken('Token Name')->accessToken;
+        if(Auth::attempt(['email' => $request['email'], 'password' => $request['password']])){
+            $user = Auth::user();
+            $data['token'] = 'Bearer ' .$user->createToken('App Access')->accessToken;
             $data['user'] = $user;
             return $data;
         }
     }
 
     public function register($request){
-        return $this->user->create($request->only($this->user->getFillable()));
+        return $this->user->create([
+            'name' => $request['name'],
+            'email' => $request['email'],
+            'password' => Hash::make($request['password'])
+        ]);
     }
 }
